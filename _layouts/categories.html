@@ -1,16 +1,7 @@
 ---
-layout: framework
-sidebar: category-list
+layout: archive
 ---
 
-{%- if site.posts.size > 0 -%}
+{{ content }}
 
-  {%- include functions.html func='log' level='debug' msg='Get value' -%}
-  {%- include functions.html func='get_categories' -%}
-  {% assign categories = return %}
-
-  {% assign keys = categories %}
-  {% assign field = 'categories' %}
-  {%- include views/segments.html -%}
-
-{%- endif -%}
+{% include posts-taxonomy.html taxonomies=site.categories %}
