@@ -113,7 +113,7 @@ analytics:
 # Site Author
 author:
   name: "김년"
-  avatar: # path of avatar image, e.g. "/assets/images/bio-photo.jpg"
+  avatar: "/assets/images/profile.png" # path of avatar image, e.g. "/assets/images/bio-photo.jpg"
   bio: "개발자"
   location: "한국"
   email:
@@ -299,7 +299,6 @@ compress_html:
   ignore:
     envs: development
 
-# Defaults
 defaults:
   # _posts
   - scope:
