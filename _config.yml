@@ -19,7 +19,7 @@ locale: "ko"
 rtl: # true, false (default) # turns direction of the page into right to left for RTL languages
 title: "사이트 제목"
 title_separator: "-"
-subtitle: 호기심 천국 # site tagline that appears below site title in masthead
+subtitle: "서브 제목" # site tagline that appears below site title in masthead
 name: "으넌넌"
 description: "아자아자 화이팅"
 url: "https://eui20n.github.io" # the base hostname & protocol for your site e.g. "https://mmistakes.github.io"
@@ -115,7 +115,7 @@ author:
   name: "김년"
   avatar: "/assets/images/profile.png" # path of avatar image, e.g. "/assets/images/bio-photo.jpg"
   bio: "개발자"
-  location: "한국"
+  location: "South Korea"
   email:
   links:
     - label: "Email"
