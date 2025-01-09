@@ -1,0 +1,135 @@
+---
+layout: single 
+title: "백준 24337 가희와 탑"
+date: 2025-01-09 21:00:00 +0900 
+last_modified_at : 2025-01-09 21:00:00 +0900 
+categories: [Algorithm]
+tags: [Java, 백준]
+toc: true
+toc_sticky: true
+permalink: /:categories/:title # 해당 포스트의 링크 커스텀 마이징
+
+comments: true
+---
+
+# 한 줄 평가
+- 조합으로 가장한 그리디 문제로 조합을 하겠다는 생각만 버린다면 쉽게 풀 수 있을 듯합니다.
+- **한 번쯤 풀어 보는 것도 나쁘지 않은 문제**입니다. 
+
+# 문제 설명
+문제는 [문제 링크](https://www.acmicpc.net/problem/24337) 에 들어가면 확인할 수 있습니다. 그래서 간단하게 설명하겠습니다.   
+   
+가희가 왼쪽에서 건물을 보고, 단비가 오른쪽에서 건물을 봅니다. 가희와 단비가 볼 수 있는 건물의 수를 말해줍니다.  
+가희가 3이라고 하면 3개의 건물을 볼 수 있는 것이고, 단비가 2라고 하면 2개의 건물을 볼 수 있는 것입니다. 높이가 같은 건물은 하나의 건물로 취급하며, 점점 더 높은 건물을 볼 수 있습니다.  
+위에서 말한 가희가 3개, 단비가 2개의 건물을 볼 수 있다면 건물의 높이는 [1, 2, 3, 1], [1, 2, 2, 3, 1], [1, 10, 15, 10] 등 여러 경우가 있습니다.  
+이때, 전체 건물 수 N, 가희가 볼 수 있는 건물의 개수 a, 단비가 볼 수 있는 건물의 개수 b가 주어질 때, 사전 순으로 가장 앞서는 N개의 건물 높이 정보를 출력하면 됩니다. 그리고 이러한 건물 높이 정보가 없을 땐, -1을 출력하면 됩니다. 
+
+## 문제 조건
+- 1 <= N <= 10<sup>4<sup>   
+- 1 <= a <= N   
+- 1 <= b <= N   
+
+## 로직 설명
+이 문제를 처음 접했을 때는 **조합**을 생각했습니다. 그 근거는 **사전 순**으로 정답을 출력해야 하기 때문입니다. 하지만, 입력을 보고 조합은 아니라고 생각했습니다. N이 최대 100,000이기 때문에 **조합으로 하면 말도 안 되는 시간이 소요**될 것으로 판단했습니다. 그렇게 계속 사전 순이라는 말에 집중했고, 깨닫게 되었습니다.  
+   
+사전 순이라는 의미는 111이 112보다 더 앞선다는 의미 입니다. 이 말은 즉, 123이 124보다 앞선다는 의미 입니다. 즉, 입력으로 들어오는 a, b를 가지고 초기배열을 만든 후, 나머지 자리는 1로 채우면 된다는 의미 입니다.   
+   
+만약 N = 6, a = 3, b = 2   
+이라면 사전 순으로 가장 빠른 정답은 [1, 1, **1, 2, 3, 1**]가 됩니다. **굵은 글씨로 된 [1, 2, 3, 1]을 먼저 만든 후**, **길이가 N이 될 때까지 앞에 1을 붙여 주면** 문제에서 원하는 **사전 순**으로 가장 앞선 정답이 나오게 됩니다.  
+
+### 예외
+위처럼 한다면, 한 가지 문제가 생깁니다. 그 경우가 **a=1**인 경우 입니다. N = 5, a = 1, b = 3인 경우 정답은 [3, 1, 1, 2, 1] 가 됩니다. 그래서 해당 경우만 조심해준다면, 어렵지 않게 풀 수 있습니다.  
+
+## 코드
+코드는 원하는 사람만 볼 수 있게 토글로 처리했습니다.   
+
+<details>
+  <summary>코드</summary>
+  <div markdown="1">
+  ```
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+
+public class Main {
+    static int N;
+    static int leftWatch;
+    static int rightWatch;
+
+    public static void main(String[] args) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+
+        String[] tmpInput = br.readLine().split(" ");
+        N = Integer.parseInt(tmpInput[0]);
+        leftWatch = Integer.parseInt(tmpInput[1]);
+        rightWatch = Integer.parseInt(tmpInput[2]);
+
+        check();
+    }
+
+    static void check() {
+        int[] arr = makeArr();
+        if (arr.length > N) {
+            System.out.println(-1);
+        } else {
+            result(arr);
+        }
+    }
+
+    static void result(int[] arr) {
+        int[] resultArr = new int[N];
+
+        for (int i = 0; i < arr.length; i++) {
+            if (i == 0 && leftWatch == 1) {
+                // 예외 처리
+                resultArr[i] = arr[i];
+            } else {
+                resultArr[N - arr.length + i] = arr[i];
+            }
+        }
+        for (int i = 0; i < resultArr.length; i++) {
+            if (resultArr[i] >= 1) {
+                continue;
+            }
+            resultArr[i] = 1;
+        }
+        printArr(resultArr);
+    }
+
+    static void printArr(int[] arr) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < arr.length; i++) {
+            sb
+                    .append(arr[i])
+                    .append(" ");
+        }
+        System.out.println(sb.toString());
+    }
+
+    static int[] makeArr() {
+        // 초기 배열 설정
+        int[] arr = new int[leftWatch + rightWatch - 1];
+
+        for (int i = 0; i < leftWatch; i++) {
+            arr[i] = i + 1;
+        }
+        for (int i = 0; i < rightWatch; i++) {
+            arr[arr.length - i - 1] = i + 1;
+        }
+        arr[leftWatch - 1] = Math.max(leftWatch, rightWatch);
+        return arr;
+    }
+}
+  ```
+  
+  </div>
+
+</details>
+   
+## 결과
+![결과](/assets/images/2025-01-09-백준-24337-가희와-탑/가희와_탑_결과.png)
+
+### StringBuilder와 String
+결과에서 위와 아래의 차이는 위는 시간을 단축하기 위해 출력을 StringBuilder로 한 것이고, 아래는 출력을 String으로 한 것입니다.   
+   
+StringBuilder가 더 빠르다는 것은 알고 있었는데, 메모리까지 더 적게 차지하는 것은 몰랐습니다. 그래서 이러한 이유를 공부하여 다음에 작성해 보겠습니다.   
