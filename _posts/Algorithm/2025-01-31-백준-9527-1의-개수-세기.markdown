@@ -1,0 +1,227 @@
+---
+layout: single 
+title: "백준 9527 1의 개수 세기"
+date: 2025-01-31 00:00:00 +0900 
+last_modified_at : 2025-01-31 00:00:00 +0900 
+categories: [Algorithm]
+tags: [Java, 백준]
+toc: true
+toc_sticky: true
+permalink: /:categories/:title # 해당 포스트의 링크 커스텀 마이징
+
+comments: true
+---
+# 한 줄 평가
+- **누적합**과 **이진수의 규칙**을 이해하면 쉽게 풀 수 있다.
+- **풀어보기 좋은 문제**라고 판단된다. 
+
+# 문제 설명
+이번에 풀이한 문제는 백준 9527 1의 개수 세기 이다. 해당 문제의 [링크](https://www.acmicpc.net/problem/9527) 이다.   
+<br>
+간단하게 문제를 설명하면, 입력으로 들어오는 A와 B사이에 존재하는 모든 수를 이진수로 바꿨을 때, 1의 개수를 세서 출력하면 되는 문제이다.   
+<br>
+예시를 들어서 설명하면 아래와 같다. 
+
+## 예시
+문제의 입력으로 들어온 A = 2, B = 12인 경우이다.   
+<br>
+먼저 1부터 12까지 이진수로 표현하면 아래와 같다.   
+
+|---|---|---|
+|수|이진수|1의 개수|
+|:---|---:|---:|
+|01|0001|1개|
+|02|0010|1개|
+|03|0011|2개|
+|04|0100|1개|
+|05|0101|2개|
+|06|0110|2개|
+|07|0111|3개|
+|08|1000|1개|
+|09|1001|2개|
+|10|1010|2개|
+|11|1011|3개|
+|12|1100|2개|   
+
+<br>
+그럼 2부터 12까지의 1의 개수는 1 + 2 + 1 + 2 + 2 + 3 + 1 + 2 + 2 + 3 + 2 = 21개가 된다.   
+
+## 로직
+먼저 문제의 입력이 최대 10<sup>16</sup> 이다. 즉, **1경이라는 소리**이다. 그래서 **각 수의 이진수를 구하면 무조건 시간이 초과**하게 된다. 그래서 **각 수의 이진수를 구하지 않고, 문제를 풀이**해야 한다.   
+<br>
+그리고 A ~ B구간을 구하는 것은 너무 힘들다. 그렇다면 어떤 방법이 있을까??   
+<br>
+
+그것은 바로 구간합을 사용하는 것이다. 즉,**(1 ~ A까지 1의 개수)** 와 **(1 ~ B까지의 1의 개수)**를 뺀 후, 두 구간이 겹치는 구간인 **(A)**을 더해주면 된다. 예시인 2 ~ 12까지를 구간합으로 표현하면 아래 그림과 같다.   
+![구간합](/assets/images/2025-01-31-백준-9527-1의-개수-세기/구간합.png){: width="70%"}   
+<br>
+
+구간합을 하는 것까지는 알았다. 그 다음은 위에 적었던, 각 수의 이진수를 구하지 않고, 문제를 푸는 방법을 알아야 한다. 이는 이진수의 규칙을 이해하고 있으면 쉽다. 1부터 12까지 이진수를 다시 보자.   
+
+|---|---|---|
+|수|이진수|1의 개수|
+|:---|---:|---:|
+|01|0001|1개|
+|02|0010|1개|
+|03|0011|2개|
+|04|0100|1개|
+|05|0101|2개|
+|06|0110|2개|
+|07|0111|3개|
+|08|1000|1개|
+|09|1001|2개|
+|10|1010|2개|
+|11|1011|3개|
+|12|1100|2개|   
+
+여기서 xxx1은 2번마다 1번씩 등장한다. xx1x는 4번마다 2번 등장한다. x1xx는 8번마다 4번 등장한다.   
+<br>
+
+즉, **2<sup>n</sup>은 2<sup>n+1</sup>마다 2<sup>n</sup>개씩** 등장한다. xxx1은 2<sup>0</sup>이고, 1은 2번(2<sup>1</sup>)마다 1번(2<sup>0</sup>) 등장한다.    
+<br>
+
+위 규칙을 알았다면, 2<sup>n</sup>가 몇 번 등장하는지만 확인하면 된다. 그리고 **(등장 횟수) * 2<sup>n</sup>**을 하면 1의 개수를 알 수 있다. 즉, **몫을 구하면 된다**. 그 다음에는 **나머지를 구해서 여분의 값을 더해주면 된다**. 이 의미는 2<sup>n</sup>에서 n이 2라고 한다면, x1xx는 8번 마다 4번 등장한다. 만약 나머지가 3이라고 한다면, 4번 등장보다 못했기 때문에 1의 개수는 3개이며 만약 나머지가 5라면 다 등장하면 1의 개수는 4개 이다. 그리고, xx1x는 2부터 등장하기 때문에, 개수를 구할때는 2부터 구하면 된다.    
+<br>
+위를 한 번에 정리하면 **2^n은 2^(n+1)마다 2^n개씩 등장함 => 시작이 2^n** 이다. 
+
+즉, 아래에 1 ~ 32까지 이진수를 토글형태로 남겨놓겠다. 이를 보며 규칙을 찾으면 좋을 것 같다. 
+
+<details>
+  <summary>1부터 32까지 이진수</summary>
+
+  <div markdown="1">
+
+|---|---|---|
+|수|이진수|1의 개수|
+|:---|---:|---:|
+|01|**000001**|1개|
+|02|**000010**|1개|
+|03|**000011**|2개|
+|04|**000100**|1개|
+|05|**000101**|2개|
+|06|**000110**|2개|
+|07|**000111**|3개|
+|08|**001000**|1개|
+|09|**001001**|2개|
+|10|**001010**|2개|
+|11|**001011**|3개|
+|12|**001100**|2개|   
+|13|**001101**|3개|
+|14|**001110**|3개|
+|15|**001111**|4개|
+|16|**010000**|1개|
+|17|**010001**|2개|
+|18|**010010**|2개|
+|19|**010011**|3개|
+|20|**010100**|2개|
+|21|**010101**|3개|
+|22|**010110**|3개|
+|23|**010111**|4개|
+|24|**011000**|2개| 
+|25|**011001**|3개|
+|26|**011010**|3개|
+|27|**011011**|4개|
+|28|**011100**|3개|
+|29|**011101**|4개|
+|30|**011110**|4개|
+|31|**011111**|5개|
+|32|**100000**|1개|
+
+  </div>
+
+</details>
+
+## 코드
+위를 생각하면서 코드 작성한 코드를 토글로 남기겠다.    
+
+<details>
+  <summary>코드</summary>
+  <div markdown="1">
+
+  ```
+  import java.io.BufferedReader;
+    import java.io.IOException;
+    import java.io.InputStreamReader;
+    import java.util.Arrays;
+
+    public class Main {
+        static long[] range;
+        public static void main(String[] args) throws IOException {
+            BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+            range = Arrays.stream(br.readLine().split(" ")).mapToLong(Long::parseLong).toArray();
+
+            check();
+        }
+
+        static void check() {
+            long A = range[0];
+            long B = range[1];
+
+            // 이진수 구하기
+            char[] binaryA = makeBinaryArr(A);
+            char[] binaryB = makeBinaryArr(B);
+
+            // 1 ~ K 까지 1의 개수 세주기
+            long binaryCntA = binaryCnt(binaryA, A);
+            long binaryCntB = binaryCnt(binaryB, B);
+
+            // 구간합에서 겹치는 부분
+            long binaryAOneCnt = oneCnt(binaryA);
+
+            System.out.println(binaryCntB - binaryCntA + binaryAOneCnt);
+        }
+
+        static long binaryCnt(char[] charArr, long num) {
+            // 1부터 num까지 1의 개수를 세주는 메소드
+            int loopSize = charArr.length;
+            long cnt = 0;
+            long binaryNum = 1;
+
+            for (int i = 0; i < loopSize; i++) {
+                long startNum = num - binaryNum + 1;
+
+                long quotient = startNum / (binaryNum * 2); // 몫
+                long remainder = startNum % (binaryNum * 2); // 나머지
+
+                cnt += quotient * binaryNum;
+                cnt += binaryNum >= remainder ? remainder : binaryNum;
+
+                binaryNum *= 2;
+            }
+            return cnt;
+        }
+
+        static long oneCnt(char[] charArr) {
+            long cnt = 0;
+            for (int i = 0; i < charArr.length; i++) {
+                cnt += charArr[i] == '1' ? 1 : 0;
+            }
+            return cnt;
+        }
+
+        static char[] makeBinaryArr(long num) {
+            // 이진수를 구해서 char의 배열로 반환해주는 메소드
+            StringBuilder sb = new StringBuilder();
+
+            long binaryNum = 1;
+            while (true) {
+                if (binaryNum > num)
+                    break;
+
+                sb.append((num & binaryNum) >= 1 ? 1 : 0);
+                binaryNum *= 2;
+            }
+
+            return sb.reverse().toString().toCharArray();
+        }
+    }
+  ```
+  </div>
+
+</details>
+
+## 결과
+
+위 코드를 제출한 결과이다.
+
+![결과](/assets/images/2025-01-31-백준-9527-1의-개수-세기/결과.png)
