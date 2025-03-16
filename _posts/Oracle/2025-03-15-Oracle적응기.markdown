@@ -1,0 +1,163 @@
+---
+layout: single 
+title: "Oracle 적응기"
+date: 2025-03-15 00:00:00 +0900 
+last_modified_at : 2025-03-15 00:00:00 +0900 
+categories: [DBMS]
+tags: [Oracle]
+toc: true
+toc_sticky: true
+permalink: /:categories/:title
+
+comments: true
+---
+*오라클을 공부하면서 헷갈리는 문법을 적는 곳으로 계속해서 추가될 예정*
+
+# 문자열
+문자열은 ""이 아니라 ''이다   
+
+```
+[X]
+SELECT *
+FROM table
+WHERE column = "123";
+
+[O]
+SELECT *
+FROM table
+WHERE column = '123';
+```
+
+# alias
+별칭을 할 때는 ""으로 해야한다   
+
+```
+[X]
+select TO_CHAR(sysdate, 'yyyy') || ' ' || lpad(level, 2, 0) || ' ' AS 'year and day'
+from dual
+connect by level <= 12;
+
+[O]
+select TO_CHAR(sysdate, 'yyyy') || ' ' || lpad(level, 2, 0) || ' ' AS "year and day"
+from dual
+connect by level <= 12;
+```
+
+# 예약어 컬럼으로 사용하기
+예약어를 컬럼으로 사용할 때는 ``(백틱)이 아니라 "" 이다
+
+```
+[X]
+CREATE TABLE Product (
+  ProductID INT GENERATED ALWAYS AS IDENTITY (START WITH 1 INCREMENT BY 1),
+  Name VARCHAR2(100),
+  `desc` VARCHAR2(255)
+);
+
+[O]
+CREATE TABLE Product (
+  ProductID INT GENERATED ALWAYS AS IDENTITY (START WITH 1 INCREMENT BY 1),
+  Name VARCHAR2(100),
+  "desc" VARCHAR2(255)
+);
+```
+
+# MERGE INTO
+## 문법에 관해서
+
+MERGE INTO안에서 삽입(insert)와 수정(update)의 문법은 조금 다르다
+
+```
+[X]
+MERGE INTO product p
+USING dual
+ON (p.name = 'eui20n')
+WHEN MATCHED THEN
+	UPDATE 
+    	SET p."desc" = 'MATCHED'
+WHEN NOT MATCHED THEN
+	INSERT INTO Product(Name, "desc") VALUES ('merge into', 'good command');
+
+[O]
+MERGE INTO product p
+USING dual
+ON (p.name = 'eui20n')
+WHEN MATCHED THEN
+	UPDATE 
+    	SET p."desc" = 'MATCHED'
+WHEN NOT MATCHED THEN
+	INSERT (Name, "desc") VALUES ('merge into', 'good command');
+```
+
+## ON
+ON에서 괄호가 있어야 한다
+
+```
+[X]
+MERGE INTO test t
+USING dual
+ON t.name = 'king'
+WHEN MATCHED THEN
+	UPDATE SET
+    	t.salary = 1000
+WHEN NOT MATCHED THEN
+	INSERT (empno, name, mgr, job, salary) VALUES(1024, 'draven', 1000, 'man', 99);
+	
+[O]
+MERGE INTO test t
+USING dual
+ON (t.name = 'king')
+WHEN MATCHED THEN
+	UPDATE SET
+    	t.salary = 1000
+WHEN NOT MATCHED THEN
+	INSERT (empno, name, mgr, job, salary) VALUES(1024, 'draven', 1000, 'man', 99);
+```
+
+# JOIN
+## ON
+JOIN을 한 후, ON 조건이 없다면 에러난다
+
+```
+[X]
+SELECT a.empno, b.id, a.name
+FROM test a join test2 b;
+
+[O]
+SELECT a.empno, b.id, a.name
+FROM test a join test2 b
+ON a.empno = b.empno;
+```
+
+# SQL 명령어가 올바르게 종료되지 않았습니다. => 상황들
+## 명령어의 위치
+각 명령어의 위치가 다르면 에러난다.
+
+```
+[X]
+SELECT LEVEL "계층 레벨", yyyy 연도, id 부서코드, nm 부서명, sort_order 정렬순서, pid 상위부서코드
+FROM table
+CONNECT BY PRIOR id = pid
+START WITH pid = 30000
+WHERE yyyy = 2022;
+
+[O]
+SELECT LEVEL "계층 레벨", yyyy 연도, id 부서코드, nm 부서명, sort_order 정렬순서, pid 상위부서코드
+FROM table
+WHERE yyyy = 2022
+CONNECT BY PRIOR id = pid
+START WITH pid = 30000;
+```
+
+# 컬럼 전체 조회 + 추가 컬럼 조회
+*로 전체 컬럼을 조회한 후, 추가로 더 컬럼을 조회하고 싶다면 테이블에 alias를 설정하면 된다
+
+```
+[X]
+SELECT *, ROUND(MAX(score) OVER(PARTITION BY yyyy, g, cd, id), 2) 점수 
+FROM table;
+
+[O]
+SELECT a.*, ROUND(MAX(score) OVER(PARTITION BY yyyy, g, cd, id), 2) 점수 
+FROM table a;
+```
